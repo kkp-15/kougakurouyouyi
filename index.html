@@ -7,58 +7,93 @@
 </head>
 <body>
     <h1>高額療養費計算サイト</h1>
-    <form id="calcForm">
-        <label for="income">世帯年収 (万円): </label>
-        <input type="number" id="income" name="income" required><br>
+    <p>このサイトでは、医療費が高額になった場合に適用される高額療養費制度を計算します。</p>
+    <p>以下の情報を入力して計算を行ってください。</p>
 
-        <label for="medCost">医療費 (万円): </label>
-        <input type="number" id="medCost" name="medCost" required><br>
+    <form id="kougakuryouyouhi-form">
+        <label for="income">世帯年収（万円）:</label>
+        <select id="income" name="income">
+            <option value="300">300万円以下</option>
+            <option value="500">500万円以下</option>
+            <option value="700">700万円以下</option>
+            <option value="1000">1000万円以下</option>
+            <option value="above1000">1000万円以上</option>
+        </select>
+        <br><br>
 
-        <label for="multiple">多数該当回数 (回): </label>
-        <input type="number" id="multiple" name="multiple" value="0" required><br>
+        <label for="medical-expense">今月の医療費（円）:</label>
+        <select id="medical-expense" name="medical-expense">
+            <option value="10000">10,000円以下</option>
+            <option value="50000">50,000円以下</option>
+            <option value="100000">100,000円以下</option>
+            <option value="150000">150,000円以下</option>
+            <option value="above150000">150,000円以上</option>
+        </select>
+        <br><br>
 
-        <button type="submit">計算する</button>
+        <label for="usage-count">何度目の高額療養費利用月ですか？:</label>
+        <select id="usage-count" name="usage-count">
+            <option value="1">1回目</option>
+            <option value="2">2回目</option>
+            <option value="3">3回目</option>
+            <option value="4">4回目以降</option>
+        </select>
+        <br><br>
+
+        <label for="additional-expenses">今月の追加医療費（任意）:</label>
+        <input type="number" id="additional-expenses" name="additional-expenses" placeholder="例: 5000" />
+        <br><br>
+
+        <button type="button" onclick="calculate()">計算</button>
     </form>
 
-    <h2>計算結果</h2>
-    <p id="result">計算結果がここに表示されます。</p>
+    <div id="result"></div>
 
     <script>
-        document.getElementById('calcForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            // 入力値の取得
-            const income = parseInt(document.getElementById('income').value);
-            const medCost = parseInt(document.getElementById('medCost').value);
-            const multiple = parseInt(document.getElementById('multiple').value);
+        function calculate() {
+            const income = document.getElementById('income').value;
+            const medicalExpense = document.getElementById('medical-expense').value;
+            const usageCount = document.getElementById('usage-count').value;
+            const additionalExpenses = parseInt(document.getElementById('additional-expenses').value) || 0;
 
-            // 収入区分に基づいた自己負担限度額の計算
-            let limit;
-            if (income <= 370) {
-                limit = 35.4; // 住民税非課税レベル
-            } else if (income <= 770) {
-                limit = 67.4; // 1区分
-            } else if (income <= 1220) {
-                limit = 93.8; // 2区分
-            } else if (income <= 2000) {
-                limit = 130.0; // 3区分
-            } else if (income <= 3500) {
-                limit = 186.0; // 4区分
+            let calculationResult = 0;
+
+            // 年収に基づく計算（例）
+            if (income <= 500) {
+                calculationResult = 10000;
+            } else if (income <= 700) {
+                calculationResult = 15000;
+            } else if (income <= 1000) {
+                calculationResult = 20000;
             } else {
-                limit = 254.0; // 5区分
+                calculationResult = 25000;
             }
 
-            // 医療費が限度額を超える場合の計算
-            let selfPay = Math.min(medCost * 0.3, limit);
-            
-            // 多数該当による自己負担額引き下げ
-            if (multiple >= 3) {
-                selfPay = Math.max(selfPay - 20, 0); // 4回目以降、20万円引き下げ
+            // 医療費に基づく計算（例）
+            if (medicalExpense <= 10000) {
+                calculationResult += 5000;
+            } else if (medicalExpense <= 50000) {
+                calculationResult += 10000;
+            } else if (medicalExpense <= 100000) {
+                calculationResult += 15000;
+            } else {
+                calculationResult += 20000;
             }
 
-            // 結果の表示
-            document.getElementById('result').textContent = `自己負担額: ${selfPay} 万円`;
-        });
+            // 追加医療費
+            calculationResult += additionalExpenses;
+
+            // 何度目の利用かに応じた調整
+            if (usageCount == 2) {
+                calculationResult -= 5000;
+            } else if (usageCount == 3) {
+                calculationResult -= 10000;
+            } else if (usageCount >= 4) {
+                calculationResult -= 15000;
+            }
+
+            document.getElementById('result').innerHTML = "高額療養費負担額は " + calculationResult + " 円 です。";
+        }
     </script>
 </body>
 </html>
