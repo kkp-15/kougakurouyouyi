@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高額療養費計算サイト</title>
+</head>
+<body>
+    <h1>高額療養費計算サイト</h1>
+    <form id="calcForm">
+        <label for="income">世帯年収 (万円): </label>
+        <input type="number" id="income" name="income" required><br>
+
+        <label for="medCost">医療費 (万円): </label>
+        <input type="number" id="medCost" name="medCost" required><br>
+
+        <label for="multiple">多数該当回数 (回): </label>
+        <input type="number" id="multiple" name="multiple" value="0" required><br>
+
+        <button type="submit">計算する</button>
+    </form>
+
+    <h2>計算結果</h2>
+    <p id="result">計算結果がここに表示されます。</p>
+
+    <script>
+        document.getElementById('calcForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // 入力値の取得
+            const income = parseInt(document.getElementById('income').value);
+            const medCost = parseInt(document.getElementById('medCost').value);
+            const multiple = parseInt(document.getElementById('multiple').value);
+
+            // 収入区分に基づいた自己負担限度額の計算
+            let limit;
+            if (income <= 370) {
+                limit = 35.4; // 住民税非課税レベル
+            } else if (income <= 770) {
+                limit = 67.4; // 1区分
+            } else if (income <= 1220) {
+                limit = 93.8; // 2区分
+            } else if (income <= 2000) {
+                limit = 130.0; // 3区分
+            } else if (income <= 3500) {
+                limit = 186.0; // 4区分
+            } else {
+                limit = 254.0; // 5区分
+            }
+
+            // 医療費が限度額を超える場合の計算
+            let selfPay = Math.min(medCost * 0.3, limit);
+            
+            // 多数該当による自己負担額引き下げ
+            if (multiple >= 3) {
+                selfPay = Math.max(selfPay - 20, 0); // 4回目以降、20万円引き下げ
+            }
+
+            // 結果の表示
+            document.getElementById('result').textContent = `自己負担額: ${selfPay} 万円`;
+        });
+    </script>
+</body>
+</html>
